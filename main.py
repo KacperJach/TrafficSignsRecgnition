@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt #to plot accuracy
+#import matplotlib.pyplot as plt #to plot accuracy
 import cv2
 import tensorflow as tf
 from PIL import Image
@@ -16,7 +16,7 @@ classes = 43
 cur_path = os.getcwd()
 
 #Retrieving the images and their labels
-
+"""
 for i in range(classes):
     path = os.path.join(cur_path,'archive','Train',str(i))
     images = os.listdir(path)
@@ -84,19 +84,28 @@ model.save("my_model.h5")
 #plt.ylabel('loss')
 #plt.legend()
 #plt.show()
-
+"""
 #testing accuracy on test dataset
 from sklearn.metrics import accuracy_score
-y_test = pd.read_csv('Test.csv')
+from tensorflow.keras.models import load_model
+model = load_model('my_model.h5')
+test_path = os.path.join(cur_path,'archive','Test.csv')
+y_test = pd.read_csv(test_path)
 labels = y_test["ClassId"].values
-imgs = y_test["Path"].values
+imgs = y_test["Path"].values     #Test/00000
 data=[]
+to_remove = "Test/"
 for img in imgs:
-   image = Image.open(img)
-   image = image.resize((30,30))
-   data.append(np.array(image))
+    #Pre-processing test images paths
+    for r in to_remove:
+        img = img.replace(r,"")
+    img_path = os.path.join(cur_path,'archive','Test',img)
+    image = Image.open(img_path)
+    image = image.resize((30,30))
+    data.append(np.array(image))
 X_test=np.array(data)
-pred = model.predict_classes(X_test)
+predict_x=model.predict(X_test)
+pred = np.argmax(predict_x,axis=1)
 
 #Accuracy with the test data
 from sklearn.metrics import accuracy_score
